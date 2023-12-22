@@ -28,6 +28,12 @@ func newSimpleServer(addr string) *simpleServer {
 	}
 }
 
+type LoadBalancer struct {
+	port            string
+	roundRobinCount int
+	servers         []Server
+}
+
 func handleError(err error) {
 	if err != nil {
 		fmt.Println("error", err)
