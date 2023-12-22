@@ -57,3 +57,13 @@ func (s *simpleServer) IsAlive() bool { return true }
 func (s *simpleServer) Serve(rw http.ResponseWriter, req *http.Request) {
 	s.proxy.ServeHTTP(rw, req)
 }
+
+func (lb *LoadBalancer) serveProxy(rw http.ResponseWriter, req *http.Request) {
+	targetServer := lb.getNextAvailableServer()
+
+	// could optionally log stuff about the request here!
+	fmt.Printf("forwarding request to address %q\n", targetServer.Address())
+
+	// could delete pre-existing X-Forwarded-For header to prevent IP spoofing
+	targetServer.Serve(rw, req)
+}
