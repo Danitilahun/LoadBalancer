@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http/httputil"
 	"net/url"
+	"os"
 )
 
 type simpleServer struct {
@@ -13,12 +14,17 @@ type simpleServer struct {
 
 func newSimpleServer(addr string) *simpleServer {
 	serverUrl, err := url.Parse(addr)
-	if err != nil {
-		fmt.Println("url parse error", err)
-		panic(err)
-	}
+	handleError(err)
 	return &simpleServer{
 		addr:  addr,
 		proxy: httputil.NewSingleHostReverseProxy(serverUrl),
+	}
+}
+
+func handleError(err error) {
+	if err != nil {
+		fmt.Println("error", err)
+		panic(err)
+		os.Exit(1)
 	}
 }
