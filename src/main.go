@@ -2,10 +2,17 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 )
+
+type Server interface {
+	Address() string
+	IsActive() bool
+	Serve(responseWriter http.ResponseWriter, request *http.Request)
+}
 
 type simpleServer struct {
 	addr  string
