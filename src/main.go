@@ -14,6 +14,14 @@ type Server interface {
 	Serve(responseWriter http.ResponseWriter, request *http.Request)
 }
 
+func (s *simpleServer) Address() string { return s.addr }
+
+func (s *simpleServer) IsAlive() bool { return true }
+
+func (s *simpleServer) Serve(rw http.ResponseWriter, req *http.Request) {
+	s.proxy.ServeHTTP(rw, req)
+}
+
 type simpleServer struct {
 	addr  string
 	proxy *httputil.ReverseProxy
@@ -50,12 +58,15 @@ func handleError(err error) {
 	}
 }
 
-func (s *simpleServer) Address() string { return s.addr }
+func (lb *LoadBalancer) getNextAvailableServer() Server {
+	server := lb.servers[lb.roundRobinCount%len(lb.servers)]
+	for !server.IsActive() {
+		lb.roundRobinCount++
+		server = lb.servers[lb.roundRobinCount%len(lb.servers)]
+	}
+	lb.roundRobinCount++
 
-func (s *simpleServer) IsAlive() bool { return true }
-
-func (s *simpleServer) Serve(rw http.ResponseWriter, req *http.Request) {
-	s.proxy.ServeHTTP(rw, req)
+	return server
 }
 
 func (lb *LoadBalancer) serveProxy(rw http.ResponseWriter, req *http.Request) {
